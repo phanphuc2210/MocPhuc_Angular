@@ -37,6 +37,7 @@ npm run start
 ```
 
 ### Khởi chạy trang danh cho admin
+- link github: https://github.com/phanphuc2210/mocphuc_nhanvien
 - Chuyển vào thư mục trang admin
 ```
 cd mocphuc_nhanvien
@@ -48,6 +49,7 @@ ng serve
 ```
 
 ### Khởi chạy trang danh cho khách hàng
+- link github: https://github.com/phanphuc2210/mocphuc_khachhang
 - Chuyển vào thư mục trang khách hàng
 ```
 cd mocphuc_khachhang

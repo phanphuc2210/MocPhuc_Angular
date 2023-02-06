@@ -52,23 +52,3 @@ exports.payment = (req, res) => {
     })
 }
 
-exports.invoice = (req, res) => {
-    const orderId = req.params.orderId
-    Cart.getInvoiceByOrderId(orderId, (response) => {
-        res.send({result: response})
-    })
-}
-
-exports.invoiceList = (req, res) => {
-    const userId = req.params.userId
-    Cart.getInvoiceList(userId, (response) => {
-        res.send({result: response})
-    })
-}
-
-exports.statistical = (req, res) => {
-    var query = req.query
-    Cart.getStatis(query, (response) => {
-        res.send({result: response})
-    })
-}

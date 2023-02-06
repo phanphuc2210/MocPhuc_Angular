@@ -19,6 +19,7 @@ var authMiddleware = require('./app/common/authMiddleWare')
 var typeRouter = require('./app/routes/type.router')
 var productRouter = require('./app/routes/product.router')
 var cartRouter = require('./app/routes/cart.router')
+var invoiceRouter = require('./app/routes/invoice.router')
 var userRouter = require('./app/routes/user.router')
 var authRouter = require('./app/routes/auth.router')
 
@@ -26,6 +27,7 @@ app.use('/auth', authRouter)
 app.use('/types', typeRouter)
 app.use('/products', productRouter)
 app.use('/cart',cartRouter)
+app.use('/invoice',invoiceRouter)
 app.use('/users', authMiddleware.isAuth, userRouter)
 
 // upload ảnh

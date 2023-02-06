@@ -26,8 +26,8 @@ var authRouter = require('./app/routes/auth.router')
 app.use('/auth', authRouter)
 app.use('/types', typeRouter)
 app.use('/products', productRouter)
-app.use('/cart',cartRouter)
-app.use('/invoice',invoiceRouter)
+app.use('/cart', authMiddleware.isAuth,cartRouter)
+app.use('/invoice', authMiddleware.isAuth,invoiceRouter)
 app.use('/users', authMiddleware.isAuth, userRouter)
 
 // upload ảnh

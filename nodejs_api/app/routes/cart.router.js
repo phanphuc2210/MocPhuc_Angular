@@ -3,12 +3,12 @@ var router = express.Router()
 var authMiddleware = require('../common/authMiddleWare')
 var cartController = require('../controllers/cart.controller')
 
-router.get('/:id',authMiddleware.isAuth,cartController.cartOfUser)
-router.post('/', authMiddleware.isAuth,cartController.add)
-router.post('/payment', authMiddleware.isAuth,cartController.payment)
+router.get('/:id',cartController.cartOfUser)
+router.post('/',cartController.add)
+router.post('/payment',cartController.payment)
 // router.put('/:id',cartController.update)
-router.delete('/remove/:userId/:productId', authMiddleware.isAuth,cartController.remove)
-router.delete('/:userId', authMiddleware.isAuth,cartController.clear)
-router.delete('/:userId/:productId',authMiddleware.isAuth,cartController.decrease)
+router.delete('/remove/:userId/:productId',cartController.remove)
+router.delete('/:userId',cartController.clear)
+router.delete('/:userId/:productId',cartController.decrease)
 
 module.exports = router

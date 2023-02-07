@@ -114,60 +114,60 @@ Cart.sendMail = (data, result) => {
                     ${d.name}
                 </td>
                 <td style="padding: 16px 24px">
-                    ${d.price} vnđ
+                    ${new Intl.NumberFormat('it-IT', {style : 'currency', currency : 'vnd'}).format(d.price)}
                 </td>
                 <td style="padding: 16px 24px">
                     ${d.quantity}
                 </td>
                 <td style="padding: 16px 24px">
-                    ${(d.price * d.quantity) } vnđ
+                    ${new Intl.NumberFormat('it-IT', {style : 'currency', currency : 'vnd'}).format(d.price * d.quantity) }
                 </td>
             </tr>
         `
     })
     let content = `
-        <h1>MộcPhúc.</h1>
-        <div style="margin-top: 12px">
-            <h2 style="margin-bottom: 8px;">Chi tiết hóa đơn #${order.id}</h2>
-            <hr>
-            <div style="display: flex;">
-                <div>
-                    <p style="margin: 12px 0;font-weight: 700;">Tên khách hàng: <span style="font-weight: 400;">${order.name}</span></p>
-                    <p style="margin: 12px 0;font-weight: 700;">Số điện thoại: <span style="font-weight: 400;">${order.phone}</span></p>
-                    <p style="margin: 12px 0;font-weight: 700;">Nơi nhận: <span style="font-weight: 400;">${order.address}</span></p>
+            <h1>MộcPhúc.</h1>
+            <div style="margin-top: 12px; background-color: white">
+                <h2 style="margin-bottom: 8px;">Chi tiết hóa đơn #${order.id}</h2>
+                <hr>
+                <div style="display: flex;">
+                    <div>
+                        <p style="margin: 12px 0;font-weight: 700;">Tên khách hàng: <span style="font-weight: 400;">${order.name}</span></p>
+                        <p style="margin: 12px 0;font-weight: 700;">Số điện thoại: <span style="font-weight: 400;">${order.phone}</span></p>
+                        <p style="margin: 12px 0;font-weight: 700;">Nơi nhận: <span style="font-weight: 400;">${order.address}</span></p>
+                    </div>
+                    <div style="margin-left: 28px">
+                        <p style="margin: 12px 0;font-weight: 700;">Ngày đặt hàng: <span style="font-weight: 400;">${getCurrentDate()}</span></p>
+                        <p style="margin: 12px 0;font-weight: 700;">Phương thức thanh toán: <span style="font-weight: 400;">${order.payment_method}</span></p>
+                    </div>
                 </div>
-                <div style="margin-left: 28px">
-                    <p style="margin: 12px 0;font-weight: 700;">Ngày đặt hàng: <span style="font-weight: 400;">${getCurrentDate()}</span></p>
-                    <p style="margin: 12px 0;font-weight: 700;">Phương thức thanh toán: <span style="font-weight: 400;">${order.payment_method}</span></p>
-                </div>
+    
+                <table style="width: 100%; text-align: center; color: rgb(107,114,128); margin-top: 20px">
+                    <thead style="color: rgb(55,65,81);background-color: rgb(249,250,251)">
+                        <tr>
+                            <th scope="col" style="padding: 12px 24px;">
+                                Hình ảnh
+                            </th>
+                            <th scope="col" style="padding: 12px 24px;">
+                                Tên sản phẩm
+                            </th>
+                            <th scope="col" style="padding: 12px 24px;">
+                                Đơn giá
+                            </th>
+                            <th scope="col" style="padding: 12px 24px;">
+                                Số lượng
+                            </th>
+                            <th scope="col" style="padding: 12px 24px;">
+                                Thành tiền
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowProduct}
+                    </tbody>
+                </table>
+                <h3 style="color:#000; margin-top:24px; text-align: right;">Tổng tiền: <span style="color: rgb(224,36,36);">${new Intl.NumberFormat('it-IT', {style : 'currency', currency : 'vnd'}).format(total_price)}</span></h3>
             </div>
-
-            <table style="width: 100%; text-align: center; color: rgb(107,114,128); margin-top: 20px">
-                <thead style="color: rgb(55,65,81);background-color: rgb(249,250,251)">
-                    <tr>
-                        <th scope="col" style="padding: 12px 24px;">
-                            Hình ảnh
-                        </th>
-                        <th scope="col" style="padding: 12px 24px;">
-                            Tên sản phẩm
-                        </th>
-                        <th scope="col" style="padding: 12px 24px;">
-                            Đơn giá
-                        </th>
-                        <th scope="col" style="padding: 12px 24px;">
-                            Số lượng
-                        </th>
-                        <th scope="col" style="padding: 12px 24px;">
-                            Thành tiền
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowProduct}
-                </tbody>
-            </table>
-            <h3 style="color:#000; margin-top:24px; text-align: right;">Tổng tiền: <span style="color: rgb(224,36,36);">${ total_price} vnđ</span></h3>
-        </div>
     `;
     
     const mainOptions = { // thiết lập đối tượng, nội dung gửi mail

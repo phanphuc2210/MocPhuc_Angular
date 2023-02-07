@@ -5,6 +5,7 @@ var cartController = require('../controllers/cart.controller')
 
 router.get('/:id',cartController.cartOfUser)
 router.post('/',cartController.add)
+router.post('/send-mail', cartController.sendMail)
 router.post('/payment',cartController.payment)
 // router.put('/:id',cartController.update)
 router.delete('/remove/:userId/:productId',cartController.remove)

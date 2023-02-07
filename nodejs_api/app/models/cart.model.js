@@ -1,4 +1,6 @@
 const db = require('../db/connect')
+const nodemailer =  require('nodemailer');
+const { format } = require('../db/connect');
 
 const Cart = (cart) => {
     this.id = cart.id
@@ -81,6 +83,109 @@ Cart.payment = (data, result) => {
             result({orderId: orderID})
         }
     })    
+}
+
+Cart.sendMail = (data, result) => {
+    const order = data.order
+    const orderDetails = data.order_details
+    const transporter =  nodemailer.createTransport({ // config mail server
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: 'mocphuc2210@gmail.com', //Tài khoản gmail vừa tạo
+            pass: 'oikfxuwevzikbdnc' //Mật khẩu tài khoản gmail vừa tạo
+        },
+        tls: {
+            // do not fail on invalid certs
+            rejectUnauthorized: false
+        }
+    });
+    let rowProduct = ''
+    let total_price = 0
+    orderDetails.forEach(d => {
+        total_price += d.price * d.quantity
+        rowProduct += `
+            <tr style="background-color:white;border-bottom-width: 1px;color: rgb(17,24,39)">
+                <th scope="row" style="padding: 16px 24px">
+                    <img style="width:64px; margin: 0 auto" class="w-16 mx-auto" src="${d.image}">
+                </th>
+                <td style="padding: 16px 24px">
+                    ${d.name}
+                </td>
+                <td style="padding: 16px 24px">
+                    ${d.price} vnđ
+                </td>
+                <td style="padding: 16px 24px">
+                    ${d.quantity}
+                </td>
+                <td style="padding: 16px 24px">
+                    ${(d.price * d.quantity) } vnđ
+                </td>
+            </tr>
+        `
+    })
+    let content = `
+        <h1>MộcPhúc.</h1>
+        <div style="margin-top: 12px">
+            <h2 style="margin-bottom: 8px;">Chi tiết hóa đơn #${order.id}</h2>
+            <hr>
+            <div style="display: flex;">
+                <div>
+                    <p style="margin: 12px 0;font-weight: 700;">Tên khách hàng: <span style="font-weight: 400;">${order.name}</span></p>
+                    <p style="margin: 12px 0;font-weight: 700;">Số điện thoại: <span style="font-weight: 400;">${order.phone}</span></p>
+                    <p style="margin: 12px 0;font-weight: 700;">Nơi nhận: <span style="font-weight: 400;">${order.address}</span></p>
+                </div>
+                <div style="margin-left: 28px">
+                    <p style="margin: 12px 0;font-weight: 700;">Ngày đặt hàng: <span style="font-weight: 400;">${getCurrentDate()}</span></p>
+                    <p style="margin: 12px 0;font-weight: 700;">Phương thức thanh toán: <span style="font-weight: 400;">${order.payment_method}</span></p>
+                </div>
+            </div>
+
+            <table style="width: 100%; text-align: center; color: rgb(107,114,128); margin-top: 20px">
+                <thead style="color: rgb(55,65,81);background-color: rgb(249,250,251)">
+                    <tr>
+                        <th scope="col" style="padding: 12px 24px;">
+                            Hình ảnh
+                        </th>
+                        <th scope="col" style="padding: 12px 24px;">
+                            Tên sản phẩm
+                        </th>
+                        <th scope="col" style="padding: 12px 24px;">
+                            Đơn giá
+                        </th>
+                        <th scope="col" style="padding: 12px 24px;">
+                            Số lượng
+                        </th>
+                        <th scope="col" style="padding: 12px 24px;">
+                            Thành tiền
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowProduct}
+                </tbody>
+            </table>
+            <h3 style="color:#000; margin-top:24px; text-align: right;">Tổng tiền: <span style="color: rgb(224,36,36);">${ total_price} vnđ</span></h3>
+        </div>
+    `;
+    
+    const mainOptions = { // thiết lập đối tượng, nội dung gửi mail
+        from: 'MocPhuc',
+        to: order.email,
+        subject: 'Cảm ơn bạn đã đặt hàng trên MộcPhúc.',
+        text: 'Your text is here',//Thường thi mình không dùng cái này thay vào đó mình sử dụng html để dễ edit hơn
+        html: content //Nội dung html mình đã tạo trên kia :))
+    }
+    transporter.sendMail(mainOptions, function(err, info){
+        if (err) {
+            console.log(err);
+            result({mess: 'Lỗi gửi mail: '+err}) //Gửi thông báo đến người dùng
+        } else {
+            console.log('Message sent: ' +  info.response);
+            result({mess: 'Một email đã được gửi đến tài khoản của bạn'}) //Gửi thông báo đến người dùng
+        }
+    });
 }
 
 

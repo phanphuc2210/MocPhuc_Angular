@@ -52,3 +52,10 @@ exports.payment = (req, res) => {
     })
 }
 
+exports.sendMail = (req, res) => {
+    var data = req.body
+    Cart.sendMail(data, (response) => {
+        res.send({result: response})
+    })
+}
+

@@ -36,11 +36,12 @@ Product.getAll= (queryParams, result) => {
         filter_query = 'WHERE ' + filters.join(' AND ')
     }
     
-
-    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.image, a.price, a.description, b.name AS type_name FROM product AS a JOIN type AS b ON a.typeId = b.id ' + filter_query + ' ' + limit
+    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name, image.url as image '
+    query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId'
+    query += filter_query + ' GROUP by a.id ' + limit
     db.query(query , (err, res) => {
         if(err) {
-            result(null)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             result(res)
         }
@@ -48,65 +49,120 @@ Product.getAll= (queryParams, result) => {
 }
 
 Product.getById= (id, result) => {
-    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.image, a.price, a.description, b.name AS type_name FROM product AS a JOIN type AS b ON a.typeId = b.id WHERE a.id = ?;'
+    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name FROM product AS a JOIN type AS b ON a.typeId = b.id WHERE a.id = ?;'
     db.query(query, id, (err, res) => {
         if(err) {
-            result(null)
-            return
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            if(res.length > 0) {
+                let product = res[0]
+                db.query('SELECT * FROM image WHERE productId = ?;', id, (err, res) => {
+                    if(err) {
+                        result({error: "Lỗi khi truy vấn dữ liệu"})
+                    } else {
+                        let image = []
+                        res.forEach(i => {
+                            image.push(i.url)
+                        });
+                        product.image = image
+                        result(product)
+                    }
+                })
+            } else {
+                result({error: "Không tìm thấy dữ liệu"})
+            }
         }
-        result(res)
     })
 }
 
 Product.create= (data, result) => {
-    db.query("INSERT INTO product SET ?", data, (err, res) => {
+    let productId
+    let productQuery = "INSERT INTO `product` (`id`, `name`, `typeId`, `quantity`, `price`, `description`) VALUES (NULL, ?, ?, ?, ?, ?)"
+    db.query(productQuery, [data.name, data.typeId, data.quantity, data.price, data.description,], (err, res) => {
         if(err) {
-            result(null)
+            result({error: "Lỗi khi thêm mới dữ liệu"})
         } else {
-            result({id: res.insertId, ...data})
+            productId = res.insertId
+            // Thêm ảnh cho sản phẩm
+            images = data.image
+            let imageQuery = "INSERT INTO `image` (`id`, `productId`, `url`) VALUES "
+            let imageValueQuery = []
+            images.forEach(url => {
+                imageValueQuery.push(`(NULL, '${productId}', '${url}')`)
+            })
+            imageQuery += imageValueQuery.join(' , ')
+            
+            db.query(imageQuery, (err, res) => {
+                if(err) {
+                    result({error: "Lỗi khi thêm mới ảnh"})
+                } else {
+                    result({id: productId, ...data})
+                }
+            })
         }
     })
 }
 
-Product.update = (id, data,result) => {
-    let query = `UPDATE product SET name=?,typeId=?, quantity=?, image=?, price=?, description=?  WHERE id=?`
-    db.query(query, [data.name, data.typeId, data.quantity, data.image, data.price, data.description, id],
+Product.update = (id, data, result) => {
+    let query = `UPDATE product SET name=?,typeId=?, quantity=?, price=?, description=?  WHERE id=?`
+    db.query(query, [data.name, data.typeId, data.quantity, data.price, data.description, id],
         (err, res) => {
-            console.log(err)
             if(err) {
-                result(null) 
+                result({error: "Lỗi khi cập nhật dữ liệu"})
             } else {
-                result({id, product: data})
+                // Xóa ảnh cũ
+                db.query('DELETE FROM image WHERE productId = ?', id, (err, res) => {
+                    if(err) {
+                        result({error: "Lỗi khi xóa tất cả hình ảnh cũ"})
+                    } else {
+                        // Thêm ảnh mới cho sản phẩm
+                        images = data.image
+                        let imageQuery = "INSERT INTO `image` (`id`, `productId`, `url`) VALUES "
+                        let imageValueQuery = []
+                        images.forEach(url => {
+                            imageValueQuery.push(`(NULL, '${id}', '${url}')`)
+                        })
+                        imageQuery += imageValueQuery.join(' , ')
+                        
+                        db.query(imageQuery, (err, res) => {
+                            if(err) {
+                                result({error: "Lỗi khi thêm mới ảnh"})
+                            } else {
+                                result({id, product: data})
+                            }
+                        })
+                    }
+                })
             }
-    })
+        }
+    )
 }
 
 Product.delete = (id, result) => {
     db.query('SELECT * FROM `order_detail` WHERE productId = ?', id, (err, res) => {
         if(err) {
-            result(null) 
+            result({error: err.message})
         } else {
             if(res.length > 0) {
-                result({err: 'Không thể xóa vì sản phẩm có mã #'+ id +' đã tồn tại trong hóa đơn'})
+                result({error: 'Không thể xóa vì sản phẩm có mã #'+ id +' đã tồn tại trong hóa đơn'})
             } else {
                 db.query(`DELETE FROM product WHERE id = ${id}` , (err, res) => {
                     if(err) {
-                        result(null) 
+                        result({error: "Lỗi khi xóa dữ liệu"})
                     } else {
-                        result({id})
+                        // Xóa tất cả hình ảnh của sản phẩm
+                        db.query('DELETE FROM image WHERE productId = ?', id, (err, res) => {
+                            if(err) {
+                                result({error: "Lỗi khi xóa hình ảnh của sản phẩm"})
+                            } else {
+                                result({id, message: "Xóa sản phẩm thành công"})
+                            }
+                        })
                     }
                 })
             }
         }
     })
-
-    // db.query(`DELETE FROM product WHERE id = ${id}` , (err, res) => {
-    //     if(err) {
-    //         result(null) 
-    //     } else {
-    //         result({id})
-    //     }
-    // })
 }
 
 

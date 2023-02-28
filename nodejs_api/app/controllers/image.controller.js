@@ -1,19 +1,8 @@
-var Product = require('../models/product.model')
+var Image = require('../models/image.model')
 
 exports.list = (req, res) => {
-    var query = req.query
-    Product.getAll(query, (response) => {
-        if(response.error) {
-            res.status(400).send({message: response.error})
-        } else {
-            res.send(response)
-        }
-    })
-}
-
-exports.detail = (req, res) => {
-    const id = req.params.id
-    Product.getById(id, (response) => {
+    const productId = req.params.productId
+    Image.getByProductId(productId, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -24,7 +13,7 @@ exports.detail = (req, res) => {
 
 exports.add = (req, res) => {
     var data = req.body
-    Product.create(data, (response) => {
+    Image.create(data, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -36,7 +25,7 @@ exports.add = (req, res) => {
 exports.update = (req, res) => {
     var id = req.params.id
     var data = req.body
-    Product.update(id, data,(response) => {
+    Image.update(id, data,(response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -47,7 +36,7 @@ exports.update = (req, res) => {
 
 exports.remove = (req, res) => {
     var id = req.params.id
-    Product.delete(id, (response) => {
+    Image.delete(id, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

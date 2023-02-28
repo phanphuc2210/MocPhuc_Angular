@@ -5,25 +5,25 @@ const { format } = require('../db/connect');
 const Cart = (cart) => {
     this.id = cart.id
     this.userId = cart.userId
-    this.productId = cart.product
+    this.productId = cart.productId
+    this.price_product = cart.price_product
 }
 
 Cart.getCartByUserId= (id, result) => {
-    let query = 'SELECT p.id, p.name, p.typeId, p.quantity, p.image, p.price, p.description FROM cart JOIN product as p ON cart.productId = p.id WHERE userId = ?;'
+    let query = 'SELECT p.id, p.name, p.image, p.price, p.quantity, p.description FROM cart JOIN product as p ON cart.productId = p.id WHERE userId = ?;'
     db.query(query, id, (err, res) => {
         if(err) {
-            console.log(err)
-            result(null)
-            return
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
         }
-        result(res)
     })
 }
 
 Cart.create= (data, result) => {
     db.query("INSERT INTO cart SET ?", data, (err, res) => {
         if(err) {
-            result(null)
+            result({error: "Lỗi khi thêm mới dữ liệu"})
         } else {
             result({id: res.insertId, ...data})
         }
@@ -34,9 +34,9 @@ Cart.decrease = (userId, productId, result) => {
     let query = 'DELETE FROM cart WHERE userId=? AND productId=? LIMIT 1';
     db.query(query, [userId, productId], (err, res) => {
         if(err) {
-            result(null) 
+            result({error: "Lỗi khi xóa dữ liệu"})
         } else {
-            result({userId, productId})
+            result({userId, productId, message: `Giảm số lượng sản phẩm có ID ${productId} khỏi giỏ hàng thành công`})
         }
     })
 }
@@ -45,9 +45,9 @@ Cart.remove = (userId, productId, result) => {
     let query = 'DELETE FROM cart WHERE userId=? AND productId=?';
     db.query(query, [userId, productId], (err, res) => {
         if(err) {
-            result(null) 
+            result({error: "Lỗi khi xóa dữ liệu"})
         } else {
-            result({userId, productId})
+            result({userId, productId, message: `Xóa sản phẩm có ID ${productId} khỏi giỏ hàng thành công`})
         }
     })
 }
@@ -56,9 +56,9 @@ Cart.clear = (userId, result) => {
     let query = 'DELETE FROM cart WHERE userId=?';
     db.query(query, userId, (err, res) => {
         if(err) {
-            result(null) 
+            result({error: "Lỗi khi xóa toàn bộ giỏ hàng"})
         } else {
-            result({userId})
+            result({userId, message: "Xóa thành công giỏ hàng"})
         }
     })
 }
@@ -67,20 +67,25 @@ Cart.payment = (data, result) => {
     const order = data.order
     const orderDetails = data.order_details
     let query_order = 'INSERT INTO `order` (`userId`, `date`, `address`, `phone`, `payment_method`) VALUES (?,?,?,?,?)'
-    let query_orderDetail = 'INSERT INTO `order_detail` (`orderId`, `productId`, `quantity_order`) VALUES (?,?,?)'
+    let query_orderDetail = 'INSERT INTO `order_detail` (`orderId`, `productId`, `quantity_order`, `price_product`) VALUES (?,?,?,?)'
     db.query(query_order, [order.userId, getCurrentDate(), order.address, order.phone, order.payment_method] , (err, res) => {
         if(err) {
             console.log(err)
-            result(null)
+            result({error: "Lỗi khi thêm mới 1 hóa đơn"})
         } else {
             const orderID = res.insertId
             console.log('orderID:', orderID)
             orderDetails.forEach(o => {
-                db.query(query_orderDetail, [orderID, o.productId, o.quantity], () => {
-                    db.query('UPDATE product SET quantity = quantity - ? WHERE id = ?', [o.quantity, o.productId])
+                db.query(query_orderDetail, [orderID, o.productId, o.quantity, o.price], (err, res) => {
+                    if(err) {
+                        console.log(err)
+                        result({error: "Lỗi khi thêm 1 chi tiết hóa đơn"})
+                    } else {
+                        db.query('UPDATE product SET quantity = quantity - ? WHERE id = ?', [o.quantity, o.productId])
+                    }
                 })
             });
-            result({orderId: orderID})
+            result({orderId: orderID, message: "Thanh toán thành công"})
         }
     })    
 }
@@ -93,8 +98,8 @@ Cart.sendMail = (data, result) => {
         port: 465,
         secure: true,
         auth: {
-            user: 'mocphuc2210@gmail.com', //Tài khoản gmail vừa tạo
-            pass: 'oikfxuwevzikbdnc' //Mật khẩu tài khoản gmail vừa tạo
+            user: 'mocphuc2210@gmail.com', 
+            pass: 'oikfxuwevzikbdnc'
         },
         tls: {
             // do not fail on invalid certs
@@ -180,10 +185,10 @@ Cart.sendMail = (data, result) => {
     transporter.sendMail(mainOptions, function(err, info){
         if (err) {
             console.log(err);
-            result({mess: 'Lỗi gửi mail: '+err}) //Gửi thông báo đến người dùng
+            result({error: 'Lỗi gửi mail: '+err}) //Gửi thông báo đến người dùng
         } else {
             console.log('Message sent: ' +  info.response);
-            result({mess: 'Một email đã được gửi đến tài khoản của bạn'}) //Gửi thông báo đến người dùng
+            result({message: 'Một email đã được gửi đến tài khoản của bạn'}) //Gửi thông báo đến người dùng
         }
     });
 }

@@ -8,7 +8,7 @@ let isAuth = async (req, res, next) => {
             req.auth = authData.data
             next()
         } catch (error) {
-            return res.send({message: "Mã token không hợp lệ"})
+            return res.status(400).send({message: "Mã token không hợp lệ"})
         }
     } else {
         return res.status(403).json({message: "Chưa đăng nhập"})

@@ -8,10 +8,10 @@ const Type = (type) => {
 Type.getAll= (result) => {
     db.query('SELECT * FROM type' , (err, res) => {
         if(err) {
-            result(null)
-            return
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
         }
-        result(res)
     })
 }
 

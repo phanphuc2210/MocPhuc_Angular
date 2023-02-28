@@ -15,7 +15,7 @@ Invoice.getInvoiceByOrderId = (orderId, result) => {
     db.query(query_order, orderId, (err, res) => {
         if(err) {
             console.log(err)
-            result(null)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             invoice.order = {
                 id: res[0].id,
@@ -28,14 +28,14 @@ Invoice.getInvoiceByOrderId = (orderId, result) => {
             db.query(query_orderDetail, orderId, (err, res) => {
                 if(err) {
                     console.log(err)
-                    result(null)
+                    result({error: "Lỗi khi truy vấn dữ liệu"})
                 } else {
                     let orderDetails = []
                     res.forEach(o => {
                         orderDetails.push({
                             name: o.name,
                             image: o.image,
-                            price: o.price,
+                            price: o.price_product,
                             quantity: o.quantity_order
                         })
                     })
@@ -57,7 +57,7 @@ Invoice.getInvoiceList = (userId, result) => {
     db.query(query, userId, (err, res) => {
         if(err) {
             console.log(err)
-            result(null)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             result(res)
         }
@@ -71,7 +71,7 @@ Invoice.getStatis = (queryParams, result) => {
     db.query(query, [from, to],(err, res) => {
         if(err) {
             console.log(err)
-            result(null)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             result(res)
         }

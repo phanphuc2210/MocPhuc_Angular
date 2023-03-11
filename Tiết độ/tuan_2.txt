@@ -1,0 +1,4 @@
+- Trao đổi, thảo luận với GVHD trên bản mô tả bài toán và bản thiết kế CSDL
+- Tìm hiểu thêm chi tiết sản phẩm cần có những thông tin nào, cách phân loại sản phẩm
+- Tìm hiểu những chức năng hay ở những web bán nội thất gỗ
+- Sửa lại bản mô tả bài toán và bản thiết kế CSDL

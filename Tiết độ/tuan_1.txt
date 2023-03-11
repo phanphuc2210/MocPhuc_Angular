@@ -1,0 +1,4 @@
+- Khảo sát hiện trạng
+- Tìm hiểu quy trình hoạt động của Website đối với khách hàng và Admin
+- Viết bản mô tả bài toán
+- Vẽ bản thiết kế CSDL

@@ -11,7 +11,7 @@ const Invoice = (invoice) => {
 Invoice.getInvoiceByOrderId = (orderId, result) => {
     let invoice = {}
     const query_order = 'SELECT o.id, o.date, o.address, o.phone, o.payment_method, u.firstname, u.lastname  FROM `order` as o JOIN `user` as u ON o.userId = u.id  WHERE o.id = ?'
-    const query_orderDetail = 'SELECT * FROM `order_detail` as o JOIN `product` as p ON o.productId = p.id WHERE orderId = ?'
+    const query_orderDetail = 'SELECT * FROM `order_detail` as o JOIN `product` as p ON o.productId = p.id JOIN image ON o.productId = image.productId WHERE orderId = ? GROUP by p.id'
     db.query(query_order, orderId, (err, res) => {
         if(err) {
             console.log(err)
@@ -33,8 +33,9 @@ Invoice.getInvoiceByOrderId = (orderId, result) => {
                     let orderDetails = []
                     res.forEach(o => {
                         orderDetails.push({
+                            productId: o.productId,
                             name: o.name,
-                            image: o.image,
+                            image: o.url,
                             price: o.price_product,
                             quantity: o.quantity_order
                         })

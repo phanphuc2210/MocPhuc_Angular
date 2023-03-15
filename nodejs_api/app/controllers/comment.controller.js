@@ -33,3 +33,14 @@ exports.add = (req, res) => {
         }
     })
 }
+
+exports.update = (req, res) => {
+    var data = req.body
+    Comment.update(data, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}

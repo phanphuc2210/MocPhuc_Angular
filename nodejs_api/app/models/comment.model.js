@@ -48,6 +48,19 @@ Comment.create = (data, result) => {
     })
 }
 
+Comment.update = (data, result) => {
+    let query = "UPDATE comment SET message=?,time=?,star=? WHERE userId = ? AND productId = ?"
+    let current = getCurrentDateTime()
+    db.query(query, [data.message, current, data.star, data.userId, data.productId], (err, res) => {
+        if(err) {
+            console.log(err)
+            result({error: "Lỗi khi sửa comment"})
+        } else {
+            result({...data, time: current})
+        }
+    })
+}
+
 function getCurrentDateTime() {
     var date_ob = new Date();
     var day = ("0" + date_ob.getDate()).slice(-2);

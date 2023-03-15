@@ -6,6 +6,7 @@ var commentController = require('../controllers/comment.controller')
 router.get('/:userId/:productId', commentController.detail)
 router.get('/:productId', commentController.list)
 router.post('/', authMiddleware.isAuth, commentController.add)
+router.put('/', commentController.update)
 
 
 module.exports = router

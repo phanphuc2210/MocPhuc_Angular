@@ -1,12 +1,17 @@
 const db = require('../db/connect')
+const slug = require('slug')
 
 const Product = (product) => {
     this.id = product.id
     this.name = product.name
     this.typeId = product.typeId
+    this.woodId = product.woodId
     this.quantity = product.quantity
     this.image = product.image
     this.price = product.price
+    this.length = product.length
+    this.width = product.width
+    this.height = product.height
     this.description = product.description
 }
 
@@ -49,7 +54,7 @@ Product.getAll= (queryParams, result) => {
 }
 
 Product.getById= (id, result) => {
-    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name FROM product AS a JOIN type AS b ON a.typeId = b.id WHERE a.id = ?;'
+    let query = 'SELECT a.id, a.name, a.typeId, a.woodId, a.quantity, a.price, a.length, a.width, a.height, a.description, b.name AS type_name, w.name AS wood  FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN wood AS w ON a.woodId = w.id WHERE a.id = ?;'
     db.query(query, id, (err, res) => {
         if(err) {
             result({error: "Lỗi khi truy vấn dữ liệu"})
@@ -77,8 +82,8 @@ Product.getById= (id, result) => {
 
 Product.create= (data, result) => {
     let productId
-    let productQuery = "INSERT INTO `product` (`id`, `name`, `typeId`, `quantity`, `price`, `description`) VALUES (NULL, ?, ?, ?, ?, ?)"
-    db.query(productQuery, [data.name, data.typeId, data.quantity, data.price, data.description,], (err, res) => {
+    let productQuery = "INSERT INTO `product` (`id`, `name`, `typeId`, `woodId`, `quantity`, `price`, `length`, `width`, `height` ,`description`, `slug`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    db.query(productQuery, [data.name, data.typeId, data.woodId, data.quantity, data.price, data.length, data.width, data.height, data.description, slug(data.name)], (err, res) => {
         if(err) {
             result({error: "Lỗi khi thêm mới dữ liệu"})
         } else {
@@ -104,8 +109,8 @@ Product.create= (data, result) => {
 }
 
 Product.update = (id, data, result) => {
-    let query = `UPDATE product SET name=?,typeId=?, quantity=?, price=?, description=?  WHERE id=?`
-    db.query(query, [data.name, data.typeId, data.quantity, data.price, data.description, id],
+    let query = `UPDATE product SET name=?,typeId=?, woodId=?,quantity=?, price=?, length=?,width=?,height=?,description=?,slug=?  WHERE id=?`
+    db.query(query, [data.name, data.typeId, data.woodId,data.quantity, data.price, data.length, data.width, data.height,data.description, slug(data.name),id],
         (err, res) => {
             if(err) {
                 result({error: "Lỗi khi cập nhật dữ liệu"})

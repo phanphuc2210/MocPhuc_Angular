@@ -7,8 +7,8 @@ router.get('/', woodController.list)
 router.get('/:id', woodController.detail)
 
 router.post('/', authMiddleware.isAuth, authMiddleware.checkAdmin, woodController.add)
-router.put('/:id', woodController.update)
-// router.delete('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin,woodController.remove)
+router.put('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin, woodController.update)
+router.delete('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin,woodController.remove)
 
 
 

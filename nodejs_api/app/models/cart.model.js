@@ -1,6 +1,6 @@
 const db = require('../db/connect')
+const { statusCode } = require('../common/constant')
 const nodemailer =  require('nodemailer');
-const { format } = require('../db/connect');
 
 const Cart = (cart) => {
     this.id = cart.id
@@ -66,15 +66,16 @@ Cart.clear = (userId, result) => {
 Cart.payment = (data, result) => {
     const order = data.order
     const orderDetails = data.order_details
-    let query_order = 'INSERT INTO `order` (`userId`, `date`, `address`, `phone`, `payment_method`) VALUES (?,?,?,?,?)'
+    let query_order = 'INSERT INTO `order` (`userId`, `order_date`, `address`, `phone`, `payment_method`, `status`) VALUES (?,?,?,?,?,?)'
     let query_orderDetail = 'INSERT INTO `order_detail` (`orderId`, `productId`, `quantity_order`, `price_product`) VALUES (?,?,?,?)'
-    db.query(query_order, [order.userId, getCurrentDate(), order.address, order.phone, order.payment_method] , (err, res) => {
+    let query_statusTrack = 'INSERT INTO `status_track` (`orderId`, `statusId`, `date`) VALUES (?,?,?)'
+    db.query(query_order, [order.userId, getCurrentDate(), order.address, order.phone, order.payment_method, 1] , (err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi thêm mới 1 hóa đơn"})
         } else {
             const orderID = res.insertId
-            console.log('orderID:', orderID)
+            db.query(query_statusTrack, [orderID, statusCode.Da_Dat_Hang, getCurrentDate()])
             orderDetails.forEach(o => {
                 db.query(query_orderDetail, [orderID, o.productId, o.quantity, o.price], (err, res) => {
                     if(err) {

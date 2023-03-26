@@ -23,6 +23,28 @@ exports.invoiceList = (req, res) => {
     })
 }
 
+exports.nextStatus = (req, res) => {
+    const orderId = req.params.orderId
+    Invoice.getNextStatusByOrderId(orderId, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.updateStatus = (req, res) => {
+    const data = req.body
+    Invoice.updateStatus(data, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
 exports.statistical = (req, res) => {
     var query = req.query
     Invoice.getStatis(query, (response) => {

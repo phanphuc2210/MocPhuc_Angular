@@ -21,21 +21,21 @@ var typeRouter = require('./app/routes/type.router')
 var woodRouter = require('./app/routes/wood.router')
 var productRouter = require('./app/routes/product.router')
 var commentRouter = require('./app/routes/comment.router')
-var imageRouter = require('./app/routes/image.router')
 var cartRouter = require('./app/routes/cart.router')
 var invoiceRouter = require('./app/routes/invoice.router')
 var userRouter = require('./app/routes/user.router')
 var authRouter = require('./app/routes/auth.router')
+var statusRouter = require('./app/routes/status.router')
 
 app.use('/auth', authRouter)
 app.use('/types', typeRouter)
 app.use('/woods', woodRouter)
 app.use('/products', productRouter)
 app.use('/comments', commentRouter)
-app.use('/images', imageRouter)
 app.use('/cart', authMiddleware.isAuth,cartRouter)
 app.use('/invoice', authMiddleware.isAuth,invoiceRouter)
 app.use('/users', authMiddleware.isAuth, userRouter)
+app.use('/status', statusRouter)
 
 // upload ảnh
 app.post('/upload' , (req , res)=>{

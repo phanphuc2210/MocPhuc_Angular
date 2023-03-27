@@ -96,6 +96,18 @@ Invoice.getNextStatusByOrderId = (orderId, result) => {
     })
 }
 
+Invoice.getListStatusByOrderId = (orderId, result) => {
+    let query = 'SELECT s.name AS status_name, st.date FROM status_track AS st JOIN status AS s ON st.statusId = s.id WHERE orderId = ?'
+    db.query(query, orderId, (err, res) => {
+        if(err) {
+            console.log(err)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
+        }
+    })
+}
+
 Invoice.updateStatus = (data, result) => {
     let query_statusTrack = 'INSERT INTO `status_track` (`orderId`, `statusId`, `date`) VALUES (?,?,?)'
     db.query('UPDATE `order` SET status = ? WHERE id = ?', [data.nextStatus, data.orderId], (err, res) => {
@@ -103,7 +115,7 @@ Invoice.updateStatus = (data, result) => {
             console.log(err)
             result({error: "Lỗi khi cập nhật trạng thái mới"})
         } else {
-            db.query(query_statusTrack, [data.orderId, data.nextStatus, getCurrentDate()], (err, res) => {
+            db.query(query_statusTrack, [data.orderId, data.nextStatus, getCurrentDateTime()], (err, res) => {
                 if(err) {
                     console.log(err)
                     result({error: "Lỗi khi cập nhật status tracking"})
@@ -129,14 +141,17 @@ Invoice.getStatis = (queryParams, result) => {
     })
 }
 
-function getCurrentDate() {
+function getCurrentDateTime() {
     var date_ob = new Date();
     var day = ("0" + date_ob.getDate()).slice(-2);
     var month = ("0" + (date_ob.getMonth() + 1)).slice(-2);
     var year = date_ob.getFullYear();
+    var hour = date_ob.getHours();
+    var minute = date_ob.getMinutes();
+    var second = date_ob.getSeconds();
 
-    var date = year + "-" + month + "-" + day;
-    return date
+    var datetime = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+    return datetime
 }
 
 module.exports = Invoice

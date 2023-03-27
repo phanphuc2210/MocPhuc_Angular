@@ -34,6 +34,17 @@ exports.nextStatus = (req, res) => {
     })
 }
 
+exports.status = (req, res) => {
+    const orderId = req.params.orderId
+    Invoice.getListStatusByOrderId(orderId, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
 exports.updateStatus = (req, res) => {
     const data = req.body
     Invoice.updateStatus(data, (response) => {

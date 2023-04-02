@@ -5,6 +5,7 @@ const Wood = (wood) => {
     this.name = wood.name
     this.image = wood.image
     this.description = wood.description
+    this.detail = wood.detail
     this.advantage = wood.advantage
     this.defect = wood.defect
 }
@@ -35,8 +36,8 @@ Wood.getById= (id, result) => {
 }
 
 Wood.create= (data, result) => {
-    let query = "INSERT INTO `wood` (`id`, `name`, `description`, `image`, `advantage`, `defect`) VALUES (NULL, ?, ?, ?, ?, ?)"
-    db.query(query, [data.name, data.description, data.image, data.advantage, data.defect,], (err, res) => {
+    let query = "INSERT INTO `wood` (`id`, `name`, `description`,`detail`, `image`, `advantage`, `defect`) VALUES (NULL, ?, ?, ?, ?, ?, ?)"
+    db.query(query, [data.name, data.description, data.detail,data.image, data.advantage, data.defect,], (err, res) => {
         if(err) {
             result({error: "Lỗi khi thêm mới dữ liệu"})
         } else {
@@ -46,8 +47,8 @@ Wood.create= (data, result) => {
 }
 
 Wood.update = (id, data, result) => {
-    let query = `UPDATE wood SET name=?, description=?, image=?, advantage=?, defect=?  WHERE id=?`
-    db.query(query, [data.name, data.description, data.image, data.advantage, data.defect, id],
+    let query = `UPDATE wood SET name=?, description=?, detail=?,image=?, advantage=?, defect=?  WHERE id=?`
+    db.query(query, [data.name, data.description, data.detail,data.image, data.advantage, data.defect, id],
         (err, res) => {
             if(err) {
                 result({error: "Lỗi khi cập nhật dữ liệu"})

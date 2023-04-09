@@ -10,14 +10,15 @@ const Voucher = (voucher) => {
     this.quantity = voucher.quantity;
 };
 
-Voucher.getAll = (isCustomer,result) => {
+Voucher.getAll = (userId,result) => {
     let condition = ''
     let currentDate = getCurrentDate()
-    if(isCustomer) {
-        condition = `WHERE v.release_date <= '${currentDate}' AND v.expiration_date >= '${currentDate}'`
+    if(userId) {
+        condition = ` AND v.release_date <= '${currentDate}' AND v.expiration_date >= '${currentDate}'`+
+            ' AND v.code NOT IN (SELECT code FROM `order`'+` WHERE userId = ${userId})`
     }
-    let query = 'SELECT v.id,v.code,v.discount,v.release_date,v.expiration_date,t.name AS applicable_productTypeName,v.bill_from,v.quantity'+
-        ' FROM voucher AS v JOIN type AS t ON v.applicable_productType = t.id '+ condition +' ORDER BY v.release_date DESC';
+    let query = 'SELECT v.id,v.code,v.discount,v.release_date,v.expiration_date,v.applicable_productType,t.name AS applicable_productTypeName,v.bill_from,v.quantity'+
+        ' FROM voucher AS v JOIN type AS t ON v.applicable_productType = t.id WHERE v.quantity > 0'+ condition +' ORDER BY v.release_date DESC';
     db.query(query ,(err, res) => {
         if (err) {
             result({ error: 'Lỗi khi truy vấn dữ liệu' });
@@ -28,11 +29,11 @@ Voucher.getAll = (isCustomer,result) => {
 };
 
 Voucher.getAllByUser = (userId, result) => {
-    let query = 'SELECT v.id,v.code,v.discount,v.release_date,v.expiration_date,t.name AS applicable_productTypeName,v.bill_from,v.quantity'+
+    let query = 'SELECT v.id,v.code,v.discount,v.release_date,v.expiration_date,v.applicable_productType,t.name AS applicable_productTypeName,v.bill_from,v.quantity'+
     ' FROM voucher AS v JOIN type AS t ON v.applicable_productType = t.id JOIN voucher_repo as r ON v.id = r.voucherId'+
-    ' WHERE r.userId = ? ORDER BY v.release_date DESC';
+    ' WHERE r.userId = ? AND v.code NOT IN (SELECT code FROM `order` WHERE userId = ?) ORDER BY v.release_date DESC';
 
-    db.query(query, userId, (err, res) => {
+    db.query(query, [userId,userId],(err, res) => {
         if (err) {
             result({ error: 'Lỗi khi truy vấn dữ liệu' });
         } else {
@@ -55,6 +56,23 @@ Voucher.getById = (id, result) => {
         }
     });
 };
+
+Voucher.checkApply = (params, result) => {
+    let code = params.code;
+    let userId = params.userId;
+    let query = 'SELECT * FROM `order` WHERE userId=? AND code=?'
+    db.query(query, [userId, code], (err, res) => {
+        if (err) {
+            result({ error: 'Lỗi khi truy vấn dữ liệu' });
+        } else {
+            if (res.length > 0) {
+                result({is_allow_apply: false});
+            } else {
+                result({is_allow_apply: true});
+            }
+        }
+    })
+}
 
 Voucher.create = (data, result) => {
     let query =

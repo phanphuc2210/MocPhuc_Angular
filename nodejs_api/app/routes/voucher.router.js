@@ -3,9 +3,10 @@ var router = express.Router()
 var authMiddleware = require('../common/authMiddleWare')
 var voucherController = require('../controllers/voucher.controller')
 
-router.get('/', voucherController.list)
-router.get('/:id', voucherController.detail)
+router.get('/check-apply', voucherController.checkApply)
 router.get('/user/:userId', voucherController.listByUser)
+router.get('/:id', voucherController.detail)
+router.get('/', voucherController.list)
 
 router.post('/save', authMiddleware.isAuth, voucherController.save)
 router.post('/', authMiddleware.isAuth, authMiddleware.checkAdmin, voucherController.add)

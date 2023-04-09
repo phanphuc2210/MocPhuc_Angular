@@ -53,6 +53,24 @@ Product.getAll= (queryParams, result) => {
     })
 }
 
+Product.getByType = (slug, result) => {
+    let condition = ''
+    if(slug !== 'all') {
+        condition = `WHERE b.slug='${slug}'`
+    }
+    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
+    query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId LEFT JOIN comment AS c ON a.id = c.productId '
+    query += `${condition} GROUP by a.id `
+
+    db.query(query, (err, res) => {
+        if(err) {
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
+        }
+    })
+}
+
 Product.getById= (id, result) => {
     let query = 'SELECT a.id, a.name, a.typeId, a.woodId, a.quantity, a.price, a.length, a.width, a.height, a.description, b.name AS type_name, w.name AS wood  FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN wood AS w ON a.woodId = w.id WHERE a.id = ?;'
     db.query(query, id, (err, res) => {

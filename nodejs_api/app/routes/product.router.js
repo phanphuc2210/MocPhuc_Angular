@@ -4,6 +4,7 @@ var authMiddleware = require('../common/authMiddleWare')
 var productController = require('../controllers/product.controller')
 
 router.get('/', productController.list)
+router.get('/list/:slug', productController.listProductByType)
 router.get('/:id', productController.detail)
 
 router.post('/', authMiddleware.isAuth, authMiddleware.checkAdmin, productController.add)

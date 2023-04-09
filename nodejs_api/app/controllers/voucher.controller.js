@@ -1,8 +1,8 @@
 var Voucher = require('../models/voucher.model')
 
 exports.list = (req, res) => {
-    const isCustomer = req.query.customer? req.query.customer : false
-    Voucher.getAll(isCustomer, (response) => {
+    const userId = req.query.userId? req.query.userId : null
+    Voucher.getAll(userId, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -25,6 +25,17 @@ exports.listByUser = (req, res) => {
 exports.detail = (req, res) => {
     const id = req.params.id
     Voucher.getById(id, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.checkApply = (req, res) => {
+    const queryParams = req.query
+    Voucher.checkApply(queryParams, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

@@ -66,3 +66,14 @@ exports.statistical = (req, res) => {
         }
     })
 }
+
+exports.sendMail = (req, res) => {
+    var data = req.body
+    Invoice.sendMail(data, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}

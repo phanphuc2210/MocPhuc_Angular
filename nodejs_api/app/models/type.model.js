@@ -4,10 +4,18 @@ const slug = require('slug');
 const Type = (type) => {
     this.id = type.id;
     this.name = type.name;
+    this.slug = type.slug;
+    this.active = type.active;
+    this.description = type.description;
 };
 
-Type.getAll = (result) => {
-    db.query('SELECT * FROM type', (err, res) => {
+Type.getAll = (queryParams,result) => {
+    let condition = ''
+    if(queryParams.slug) {
+        condition += ` WHERE slug = '${queryParams.slug}'`
+    }
+    let query = 'SELECT * FROM type' + condition
+    db.query(query, (err, res) => {
         if (err) {
             result({ error: 'Lỗi khi truy vấn dữ liệu' });
         } else {

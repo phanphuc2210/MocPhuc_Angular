@@ -27,6 +27,7 @@ var invoiceRouter = require('./app/routes/invoice.router')
 var userRouter = require('./app/routes/user.router')
 var authRouter = require('./app/routes/auth.router')
 var statusRouter = require('./app/routes/status.router')
+var paymentMethodRouter = require('./app/routes/payment_method.router')
 
 app.use('/auth', authRouter)
 app.use('/types', typeRouter)
@@ -38,6 +39,7 @@ app.use('/cart', authMiddleware.isAuth,cartRouter)
 app.use('/invoice', authMiddleware.isAuth,invoiceRouter)
 app.use('/users', authMiddleware.isAuth, userRouter)
 app.use('/status', statusRouter)
+app.use('/payment-method', paymentMethodRouter)
 
 // upload ảnh
 app.post('/upload' , (req , res)=>{

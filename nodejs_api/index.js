@@ -6,7 +6,7 @@ const fs = require('fs')
 const fileUpload = require('express-fileupload')
 
 
-app.use(cors())
+app.use(cors());
 app.use(fileUpload())
 
 // Cau hinh body-parser
@@ -23,6 +23,7 @@ var productRouter = require('./app/routes/product.router')
 var voucherRouter = require('./app/routes/voucher.router')
 var commentRouter = require('./app/routes/comment.router')
 var cartRouter = require('./app/routes/cart.router')
+var paymentRouter = require('./app/routes/payment.router')
 var invoiceRouter = require('./app/routes/invoice.router')
 var userRouter = require('./app/routes/user.router')
 var authRouter = require('./app/routes/auth.router')
@@ -36,8 +37,9 @@ app.use('/products', productRouter)
 app.use('/voucher', voucherRouter)
 app.use('/comments', commentRouter)
 app.use('/cart', authMiddleware.isAuth,cartRouter)
+app.use('/payment',paymentRouter)
 app.use('/invoice', authMiddleware.isAuth,invoiceRouter)
-app.use('/users', authMiddleware.isAuth, userRouter)
+app.use('/users', userRouter)
 app.use('/status', statusRouter)
 app.use('/payment-method', paymentMethodRouter)
 

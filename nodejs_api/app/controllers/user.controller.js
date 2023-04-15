@@ -107,3 +107,37 @@ exports.changePassword = (req, res) => {
         });
     });
 }
+
+exports.forgotPassword = async (req, res) => {
+    let data = req.body;
+    User.forgotPassword(data, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.resetPassword = (req, res) => {
+    let data = req.body;
+    let encryptedPassword = ''
+
+    bcrypt.genSalt(saltRounds, function(err, salt) {
+        bcrypt.hash(data.newPass, salt, function(err, hash) {
+            encryptedPassword = hash
+            data = {
+                ...data,
+                newPass: encryptedPassword
+            }
+
+            User.resetPassword(data, (response) => {
+                if(response.error) {
+                    res.status(400).send({message: response.error})
+                } else {
+                    res.send(response)
+                }
+            })
+        });
+    });
+}

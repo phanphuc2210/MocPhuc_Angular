@@ -1,4 +1,5 @@
 const db = require('../db/connect')
+const moment = require('moment');
 const { statusCode } = require('../common/constant')
 
 const Cart = (cart) => {
@@ -9,7 +10,8 @@ const Cart = (cart) => {
 }
 
 Cart.getCartByUserId= (id, result) => {
-    let query = 'SELECT p.id, p.name, p.image, p.price, p.quantity, p.description FROM cart JOIN product as p ON cart.productId = p.id WHERE userId = ?;'
+    let query = 'SELECT p.id, p.name, image.url as image, p.price, p.quantity, p.description '+
+        'FROM cart JOIN product as p ON cart.productId = p.id JOIN image ON cart.productId = image.productId WHERE userId = ?;'
     db.query(query, id, (err, res) => {
         if(err) {
             result({error: "Lỗi khi truy vấn dữ liệu"})
@@ -65,18 +67,19 @@ Cart.clear = (userId, result) => {
 Cart.payment = (data, result) => {
     const order = data.order
     const orderDetails = data.order_details
-    let query_order = 'INSERT INTO `order` (`userId`, `order_date`, `customer_name`,`address`, `phone`, `email`,`payment_method`, `status`, `discount`, `code`) VALUES (?,?,?,?,?,?,?,?,?,?)'
+    var date = new Date();
+    let orderId = moment(date).format('MMDDHHmmss');
+    let query_order = 'INSERT INTO `order` (`id`,`userId`, `order_date`, `customer_name`,`address`, `phone`, `email`,`payment_method`, `status`, `discount`, `code`) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
     let query_orderDetail = 'INSERT INTO `order_detail` (`orderId`, `productId`, `quantity_order`, `price_product`) VALUES (?,?,?,?)'
     let query_statusTrack = 'INSERT INTO `status_track` (`orderId`, `statusId`, `date`) VALUES (?,?,?)'
-    db.query(query_order, [order.userId, getCurrentDate(), order.name, order.address, order.phone, order.email,order.payment_method, 1, order.discount, order.code] , (err, res) => {
+    db.query(query_order, [orderId,order.userId, getCurrentDate(), order.name, order.address, order.phone, order.email,order.payment_method, 1, order.discount, order.code] , (err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi thêm mới 1 hóa đơn"})
         } else {
-            const orderID = res.insertId
-            db.query(query_statusTrack, [orderID, statusCode.Da_Dat_Hang, getCurrentDateTime()])
+            db.query(query_statusTrack, [orderId, statusCode.Da_Dat_Hang, getCurrentDateTime()])
             orderDetails.forEach(o => {
-                db.query(query_orderDetail, [orderID, o.productId, o.quantity, o.price], (err, res) => {
+                db.query(query_orderDetail, [orderId, o.productId, o.quantity, o.price], (err, res) => {
                     if(err) {
                         console.log(err)
                         result({error: "Lỗi khi thêm 1 chi tiết hóa đơn"})
@@ -86,7 +89,7 @@ Cart.payment = (data, result) => {
                 })
             });
             db.query('UPDATE voucher SET quantity = quantity - 1 WHERE code = ?', order.code)
-            result({orderId: orderID, message: "Thanh toán thành công"})
+            result({orderId, message: "Thanh toán thành công"})
         }
     })    
 }

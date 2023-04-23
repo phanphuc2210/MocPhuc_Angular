@@ -31,7 +31,7 @@ Voucher.getAll = (userId,result) => {
 Voucher.getAllByUser = (userId, result) => {
     let query = 'SELECT v.id,v.code,v.discount,v.release_date,v.expiration_date,v.applicable_productType,t.name AS applicable_productTypeName,v.bill_from,v.quantity'+
     ' FROM voucher AS v JOIN type AS t ON v.applicable_productType = t.id JOIN voucher_repo as r ON v.id = r.voucherId'+
-    ' WHERE r.userId = ? AND v.code NOT IN (SELECT code FROM `order` WHERE userId = ?) ORDER BY v.release_date DESC';
+    ' WHERE r.userId = ? AND v.code NOT IN (SELECT code FROM `order` WHERE userId = ?) AND v.quantity > 0 ORDER BY v.release_date DESC';
 
     db.query(query, [userId,userId],(err, res) => {
         if (err) {

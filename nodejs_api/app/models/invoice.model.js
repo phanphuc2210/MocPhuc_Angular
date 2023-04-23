@@ -1,5 +1,5 @@
 const db = require('../db/connect')
-const { statusCode } = require('../common/constant')
+const { statusCode, paymentMethod } = require('../common/constant')
 const nodemailer =  require('nodemailer');
 
 const Invoice = (invoice) => {
@@ -15,8 +15,8 @@ const Invoice = (invoice) => {
 
 Invoice.getInvoiceByOrderId = (orderId, result) => {
     let invoice = {}
-    const query_order = 'SELECT o.id, o.order_date, o.address, o.phone, o.email,m.name AS payment_method, u.firstname, u.lastname, s.name AS status_name, o.status, o.discount'+
-        ' FROM `order` as o JOIN `user` as u ON o.userId = u.id JOIN `status` as s ON o.status = s.id JOIN `payment_method` as m ON o.payment_method = m.id'+
+    const query_order = 'SELECT o.id, o.order_date, o.customer_name ,o.address, o.phone, o.email,m.name AS payment_method, s.name AS status_name, o.status, o.discount'+
+        ' FROM `order` as o JOIN `status` as s ON o.status = s.id JOIN `payment_method` as m ON o.payment_method = m.id'+
         ' WHERE o.id = ?'
     const query_orderDetail = 'SELECT * FROM `order_detail` as o JOIN `product` as p ON o.productId = p.id JOIN image ON o.productId = image.productId WHERE orderId = ? GROUP by p.id'
     db.query(query_order, orderId, (err, res) => {
@@ -26,7 +26,7 @@ Invoice.getInvoiceByOrderId = (orderId, result) => {
         } else {
             invoice.order = {
                 id: res[0].id,
-                name: res[0].lastname + ' ' + res[0].firstname,
+                name: res[0].customer_name,
                 phone: res[0].phone,
                 email: res[0].email,
                 address: res[0].address,
@@ -78,22 +78,26 @@ Invoice.getInvoiceList = (userId, result) => {
 
 Invoice.getNextStatusByOrderId = (orderId, result) => {
     let currentStatus
-    db.query('SELECT status FROM `order` WHERE id = ?', orderId, (err, res) => {
+    let isShowCancelBtn = false;
+    db.query('SELECT status, payment_method FROM `order` WHERE id = ?', orderId, (err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             if(res.length > 0) {
                 currentStatus = res[0].status
+                if(res[0].payment_method !== paymentMethod.VNPAY && currentStatus === statusCode.Da_Dat_Hang) {
+                    isShowCancelBtn = true
+                }
                 db.query('SELECT * FROM status WHERE id = ?', currentStatus + 1, (err, res) => {
                     if(err) {
                         console.log(err)
                         result({error: "Lỗi khi truy vấn dữ liệu"})
                     } else {
                         if(res.length > 0) {
-                            result({orderId, statusId: res[0].id, nextStatus: res[0].name})
+                            result({orderId, statusId: res[0].id, nextStatus: res[0].name, isShowCancelBtn})
                         } else {
-                            result({orderId, statusId: 5, nextStatus: 'Hoàn thành'})
+                            result({orderId, statusId: 5, nextStatus: 'Hoàn thành', isShowCancelBtn})
                         }
                     }
                 })
@@ -152,6 +156,7 @@ Invoice.getStatis = (queryParams, result) => {
 Invoice.sendMail = (data, result) => {
     const order = data.order
     const orderDetails = data.order_details
+    const subject = data.subject
     const transporter =  nodemailer.createTransport({ // config mail server
         host: 'smtp.gmail.com',
         port: 465,
@@ -239,7 +244,7 @@ Invoice.sendMail = (data, result) => {
     const mainOptions = { // thiết lập đối tượng, nội dung gửi mail
         from: 'MocPhuc',
         to: order.email,
-        subject: 'Cảm ơn bạn đã đặt hàng trên MộcPhúc.',
+        subject: subject,
         text: 'Your text is here',//Thường thi mình không dùng cái này thay vào đó mình sử dụng html để dễ edit hơn
         html: content //Nội dung html mình đã tạo trên kia :))
     }

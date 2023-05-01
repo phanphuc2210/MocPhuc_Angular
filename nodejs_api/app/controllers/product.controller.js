@@ -22,9 +22,31 @@ exports.listProductByType = (req, res) => {
     })
 }
 
+exports.getProductsNotComment = (req, res) => {
+    const id = req.params.id
+    Product.getProductsNotComment(id, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
 exports.detail = (req, res) => {
     const id = req.params.id
     Product.getById(id, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.detailCT = (req, res) => {
+    const slug = req.params.slug
+    Product.getBySlug(slug, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

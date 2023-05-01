@@ -78,13 +78,13 @@ exports.update = (req, res) => {
     })
 }
 
-// exports.remove = (req, res) => {
-//     var id = req.params.id
-//     Wood.delete(id, (response) => {
-//         if(response.error) {
-//             res.status(400).send({message: response.error})
-//         } else {
-//             res.send(response)
-//         }
-//     })
-// }
+exports.remove = (req, res) => {
+    var id = req.params.id
+    Voucher.delete(id, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}

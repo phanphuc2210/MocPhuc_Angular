@@ -59,4 +59,24 @@ Wood.update = (id, data, result) => {
     )
 }
 
+Wood.delete = (id, result) => {
+    db.query('SELECT * FROM `product` WHERE woodId = ?', id, (err, res) => {
+        if(err) {
+            result({error: err.message})
+        } else {
+            if(res.length > 0) {
+                result({error: 'Không thể xóa vì loại gỗ có mã #'+ id +' đã tồn tại trong sản phẩm'})
+            } else {
+                db.query(`DELETE FROM wood WHERE id = ${id}` , (err, res) => {
+                    if(err) {
+                        result({error: "Lỗi khi xóa dữ liệu"})
+                    } else {
+                        result({id, message: "Xóa loại gỗ thành công"})
+                    }
+                })
+            }
+        }
+    })
+} 
+
 module.exports = Wood

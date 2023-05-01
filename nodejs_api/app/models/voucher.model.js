@@ -132,6 +132,16 @@ Voucher.update = (id, data, result) => {
     );
 };
 
+Voucher.delete = (id, result) => {
+    db.query('DELETE FROM voucher WHERE id = ?', id, (err, res) => {
+        if(err) {
+            result({error: "Lỗi khi xóa dữ liệu"})
+        } else {
+            result({message: "Xóa voucher thành công"})
+        }
+    })
+}
+
 function getCurrentDate() {
     var date_ob = new Date();
     var day = ("0" + date_ob.getDate()).slice(-2);

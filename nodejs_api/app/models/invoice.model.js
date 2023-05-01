@@ -59,14 +59,46 @@ Invoice.getInvoiceByOrderId = (orderId, result) => {
     })
 }
 
-Invoice.getInvoiceList = (userId, result) => {
-    let query = ''
-    if(userId != 0) {
-        query = 'SELECT o.id,o.order_date,o.address,o.phone,m.name AS payment_method,s.name AS status_name, o.status FROM `order` AS o JOIN `status` AS s ON o.status = s.id JOIN `payment_method` as m ON o.payment_method = m.id WHERE userId = ? ORDER BY id DESC'
-    } else {
-        query = 'SELECT o.id,o.order_date,o.address,o.phone,m.name AS payment_method,s.name AS status_name, o.status FROM `order` AS o JOIN `status` AS s ON o.status = s.id JOIN `payment_method` as m ON o.payment_method = m.id ORDER BY id DESC'
+Invoice.getInvoiceList = (userId, queryParams, result) => {
+    let queryStr = ''
+
+    let filters = []
+    let filter_query = ''
+    let limit = ''
+    if(queryParams != null) {
+        if(queryParams.from) {
+            filters.push(`o.order_date >= '${queryParams.from}'`)
+        }
+
+        if(queryParams.to) {
+            filters.push(`o.order_date <= '${queryParams.to}'`)
+        }
+        if(queryParams.payment) {
+            filters.push(`o.payment_method = ${queryParams.payment}`)
+        }
+
+        if(queryParams.status) {
+            filters.push(`o.status = ${queryParams.status}`)
+        }
+        
+        if(queryParams.limit) {
+            limit = `LIMIT ${Number(queryParams.limit)}`
+        }
     }
-    db.query(query, userId, (err, res) => {
+    
+    if (userId != 0) {
+        filter_query = 'WHERE userId = ?'
+        if(filters.length > 0) {
+            filter_query += 'AND ' + filters.join(' AND ')
+        }
+    } else {
+        if(filters.length > 0) {
+            filter_query = 'WHERE ' + filters.join(' AND ')
+        }
+    }
+    queryStr = 'SELECT o.id,o.order_date,o.address,o.phone,m.name AS payment_method,s.name AS status_name, o.status FROM `order` AS o JOIN `status` AS s ON o.status = s.id JOIN `payment_method` as m ON o.payment_method = m.id '+ filter_query +' ORDER BY id DESC'
+    
+    db.query(queryStr, userId, (err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi truy vấn dữ liệu"})

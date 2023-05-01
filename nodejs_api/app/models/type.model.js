@@ -40,7 +40,17 @@ Type.getById= (id, result) => {
 }
 
 Type.getParent = (result) => {
-    db.query('SELECT * FROM type WHERE parentId = 0', (err, res) => {
+    db.query('SELECT * FROM type WHERE parentId = 0 AND active = 1', (err, res) => {
+        if (err) {
+            result({ error: 'Lỗi khi truy vấn dữ liệu' });
+        } else {
+            result(res);
+        }
+    });
+};
+
+Type.getChildren = (parentId, result) => {
+    db.query('SELECT * FROM type WHERE parentId = ? AND active = 1', parentId, (err, res) => {
         if (err) {
             result({ error: 'Lỗi khi truy vấn dữ liệu' });
         } else {
@@ -52,23 +62,31 @@ Type.getParent = (result) => {
 Type.create = (data, result) => {
     let query =
         'INSERT INTO `type` (`id`, `name`, `parentId`, `description`, `slug`, `active`) VALUES (NULL, ?, ?, ?, ?, ?)';
-    db.query(
-        query,
-        [
-            data.name,
-            data.parentId,
-            data.description,
-            slug(data.name),
-            data.active,
-        ],
-        (err, res) => {
-            if (err) {
-                result({ error: 'Lỗi khi thêm mới dữ liệu' });
+    if(data.parentId !== 0) {
+        db.query('SELECT * FROM product WHERE typeId=?', data.parentId, (err, res) => {
+            if(res.length > 0) {
+                result({error: 'Không thể tạo mới vì loại sản phẩm cha có mã #'+ data.parentId +' đã tồn tại sản phẩm'})
             } else {
-                result({ id: res.insertId, ...data });
+                db.query(
+                    query,
+                    [
+                        data.name,
+                        data.parentId,
+                        data.description,
+                        slug(data.name),
+                        data.active,
+                    ],
+                    (err, res) => {
+                        if (err) {
+                            result({ error: 'Lỗi khi thêm mới dữ liệu' });
+                        } else {
+                            result({ id: res.insertId, ...data });
+                        }
+                    }
+                );
             }
-        }
-    );
+        })
+    } 
 };
 
 Type.update = (id, data, result) => {
@@ -79,12 +97,18 @@ Type.update = (id, data, result) => {
                 result({error: "Lỗi khi cập nhật dữ liệu"})
             } else {
                 if(data.parentId !== 0) {
-                    db.query('UPDATE type SET parentId = 0 WHERE parentId=?', id, (err, res) => {
-                        if(err) {
-                            console.log(err)
-                            result({error: "Lỗi khi cập nhật dữ liệu"})
+                    db.query('SELECT * FROM product WHERE typeId=?', data.parentId, (err, res) => {
+                        if(res.length > 0) {
+                            result({error: 'Không thể cập nhật vì loại sản phẩm cha có mã #'+ data.parentId +' đã tồn tại sản phẩm'})
                         } else {
-                            result({message: "Cập nhật loại sản phẩm thành công"})
+                            db.query('UPDATE type SET parentId = 0 WHERE parentId=?', id, (err, res) => {
+                                if(err) {
+                                    console.log(err)
+                                    result({error: "Lỗi khi cập nhật dữ liệu"})
+                                } else {
+                                    result({message: "Cập nhật loại sản phẩm thành công"})
+                                }
+                            })
                         }
                     })
                 } else {
@@ -96,11 +120,44 @@ Type.update = (id, data, result) => {
 }
 
 Type.delete = (id, result) => {
-    db.query('DELETE FROM type WHERE id = ?', id, (err, res) => {
+    db.query('SELECT * FROM `product` WHERE typeId = ?', id, (err, res) => {
         if(err) {
-            result({error: "Lỗi khi xóa dữ liệu"})
+            result({error: err.message})
         } else {
-            result({message: "Xóa loại sản phẩm thành công"})
+            if(res.length > 0) {
+                result({error: 'Không thể xóa vì loại sản phẩm có mã #'+ id +' đã tồn tại trong sản phẩm'})
+            } else {
+                db.query('SELECT * FROM type WHERE id = ?', id, (err, res) => {
+                    if(err) {
+                        result({error: err.message})
+                    } else {
+                        if(res[0].parentId === 0) {
+                            db.query('UPDATE type SET parentId = 0 WHERE parentId=?', id, (err, res) => {
+                                if(err) {
+                                    console.error(err)
+                                } else {
+                                    db.query(`DELETE FROM type WHERE id = ${id}` , (err, res) => {
+                                        if(err) {
+                                            result({error: "Lỗi khi xóa dữ liệu"})
+                                        } else {
+                                            result({id, message: "Xóa loại sản phẩm thành công"})
+                                        }
+                                    })
+                                }
+                            })
+                        } else {
+                            db.query(`DELETE FROM type WHERE id = ${id}` , (err, res) => {
+                                if(err) {
+                                    result({error: "Lỗi khi xóa dữ liệu"})
+                                } else {
+                                    result({id, message: "Xóa loại sản phẩm thành công"})
+                                }
+                            })
+                        }
+                    }
+                })
+
+            }
         }
     })
 }

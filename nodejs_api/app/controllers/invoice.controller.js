@@ -14,7 +14,8 @@ exports.invoice = (req, res) => {
 
 exports.invoiceList = (req, res) => {
     const userId = req.params.userId
-    Invoice.getInvoiceList(userId, (response) => {
+    const query = req.query
+    Invoice.getInvoiceList(userId, query, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

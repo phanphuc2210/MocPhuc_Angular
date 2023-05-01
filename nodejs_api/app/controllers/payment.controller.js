@@ -1,4 +1,5 @@
 const db = require('../db/connect')
+const config = require('../../config')
 const { statusCode } = require('../common/constant')
 var Invoice = require('../models/invoice.model')
 const moment = require('moment');
@@ -12,10 +13,10 @@ exports.vnpayPayment = (req, res, next) => {
         req.socket.remoteAddress ||
         req.connection.socket.remoteAddress;
 
-    var tmnCode = "WK5H83B0";
-    var secretKey = "VFARAVRGWHBMORZJGMNTWBWJHXCQDIVR";
-    var vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    var returnUrl = "http://localhost:4200/success";
+    var tmnCode = config.TMN_CODE;
+    var secretKey = config.VNPAY_SECRET_KEY;
+    var vnpUrl = config.VNPAY_URL;
+    var returnUrl = `${config.CUSTOMER_DOMAIN}/success`;
 
     var date = new Date();
     
@@ -72,7 +73,7 @@ exports.vnpayIPN = (req, res, next) => {
     delete vnp_Params['vnp_SecureHashType'];
 
     vnp_Params = sortObject(vnp_Params);
-    var secretKey = 'VFARAVRGWHBMORZJGMNTWBWJHXCQDIVR';
+    var secretKey = config.VNPAY_SECRET_KEY;
     var querystring = require('qs');
     var signData = querystring.stringify(vnp_Params, { encode: false });
     var crypto = require("crypto");     
@@ -117,8 +118,8 @@ exports.vnpayReturn = (req, res, next) => {
 
     vnp_Params = sortObject(vnp_Params);
 
-    let tmnCode = "WK5H83B0";
-    let secretKey = "VFARAVRGWHBMORZJGMNTWBWJHXCQDIVR";
+    let tmnCode = config.TMN_CODE;
+    let secretKey = config.VNPAY_SECRET_KEY;
 
     let signData = querystring.stringify(vnp_Params, { encode: false });   
     let hmac = crypto.createHmac("sha512", secretKey);

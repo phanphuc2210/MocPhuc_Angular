@@ -1,8 +1,8 @@
-var Type = require('../models/type.model')
+var Slider = require('../models/slider.model')
 
 exports.list = (req, res) => {
-    const queryParams = req.query
-    Type.getAll(queryParams,(response) => {
+    const isCustomer = req.query.isCustomer? req.query.isCustomer : null
+    Slider.getAll(isCustomer, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -13,28 +13,7 @@ exports.list = (req, res) => {
 
 exports.detail = (req, res) => {
     const id = req.params.id
-    Type.getById(id, (response) => {
-        if(response.error) {
-            res.status(400).send({message: response.error})
-        } else {
-            res.send(response)
-        }
-    })
-}
-
-exports.listParent = (req, res) => {
-    Type.getParent((response) => {
-        if(response.error) {
-            res.status(400).send({message: response.error})
-        } else {
-            res.send(response)
-        }
-    })
-}
-
-exports.listChildren = (req, res) => {
-    const parentId = req.params.parentId
-    Type.getChildren(parentId,(response) => {
+    Slider.getById(id, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -45,7 +24,7 @@ exports.listChildren = (req, res) => {
 
 exports.add = (req, res) => {
     var data = req.body
-    Type.create(data, (response) => {
+    Slider.create(data, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -57,7 +36,7 @@ exports.add = (req, res) => {
 exports.update = (req, res) => {
     var id = req.params.id
     var data = req.body
-    Type.update(id, data,(response) => {
+    Slider.update(id, data,(response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
@@ -68,7 +47,7 @@ exports.update = (req, res) => {
 
 exports.remove = (req, res) => {
     var id = req.params.id
-    Type.delete(id, (response) => {
+    Slider.delete(id, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

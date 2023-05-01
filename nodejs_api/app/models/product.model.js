@@ -13,6 +13,7 @@ const Product = (product) => {
     this.width = product.width
     this.height = product.height
     this.description = product.description
+    this.slug = product.slug
 }
 
 Product.getAll= (queryParams, result) => {
@@ -25,6 +26,9 @@ Product.getAll= (queryParams, result) => {
         }
         if(queryParams.typeId) {
             filters.push(`a.typeId = ${queryParams.typeId}`)
+        }
+        if(queryParams.woodId) {
+            filters.push(`a.woodId = ${queryParams.woodId}`)
         }
         if(queryParams.gte) {
             filters.push(`a.price >= ${Number(queryParams.gte)}`)
@@ -41,7 +45,7 @@ Product.getAll= (queryParams, result) => {
         filter_query = 'WHERE ' + filters.join(' AND ')
     }
     
-    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
+    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, a.slug,b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
     query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId LEFT JOIN comment AS c ON a.id = c.productId '
     query += filter_query + ' GROUP by a.id ' + limit
     db.query(query , (err, res) => {
@@ -58,9 +62,27 @@ Product.getByType = (slug, result) => {
     if(slug !== 'all') {
         condition = `WHERE b.slug='${slug}'`
     }
-    let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
+    let query = 'SELECT a.id, a.name, a.typeId, a.slug, a.quantity, a.price, a.description, b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
     query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId LEFT JOIN comment AS c ON a.id = c.productId '
     query += `${condition} GROUP by a.id `
+
+    db.query(query, (err, res) => {
+        if(err) {
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
+        }
+    })
+}
+
+Product.getProductsNotComment = (id, result) => {
+    let query = 'SELECT p.id, p.name, image.url as image '
+    query += 'FROM `order_detail` AS od '
+    query += 'RIGHT JOIN `order` AS o ON od.orderId = o.id '
+    query += 'JOIN product AS p ON p.id = od.productId '
+    query += 'JOIN image ON od.productId = image.productId '
+    query += `WHERE o.userId = ${id} AND o.status = 4 AND od.productId NOT IN (SELECT productId FROM comment WHERE userId = ${id}) `
+    query += 'GROUP BY od.productId;'
 
     db.query(query, (err, res) => {
         if(err) {
@@ -80,6 +102,33 @@ Product.getById= (id, result) => {
             if(res.length > 0) {
                 let product = res[0]
                 db.query('SELECT * FROM image WHERE productId = ?;', id, (err, res) => {
+                    if(err) {
+                        result({error: "Lỗi khi truy vấn dữ liệu"})
+                    } else {
+                        let image = []
+                        res.forEach(i => {
+                            image.push(i.url)
+                        });
+                        product.image = image
+                        result(product)
+                    }
+                })
+            } else {
+                result({error: "Không tìm thấy dữ liệu"})
+            }
+        }
+    })
+}
+
+Product.getBySlug= (slug, result) => {
+    let query = 'SELECT a.id, a.name, a.typeId, a.woodId, a.quantity, a.price, a.length, a.width, a.height, a.description, b.name AS type_name, w.name AS wood  FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN wood AS w ON a.woodId = w.id WHERE a.slug = ?;'
+    db.query(query, slug, (err, res) => {
+        if(err) {
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            if(res.length > 0) {
+                let product = res[0]
+                db.query('SELECT * FROM image WHERE productId = ?;', product.id, (err, res) => {
                     if(err) {
                         result({error: "Lỗi khi truy vấn dữ liệu"})
                     } else {

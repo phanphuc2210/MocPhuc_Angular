@@ -1,4 +1,5 @@
 const db = require('../db/connect')
+const config = require('../../config')
 let crypto = require("crypto");  
 const bcrypt = require('bcrypt');
 const nodemailer =  require('nodemailer');
@@ -128,9 +129,9 @@ User.forgotPassword = (data, result) => {
     const isAdmin = data.isAdmin;
     let url = '';
     if(isAdmin) {
-        url = 'localhost:2400'
+        url = config.ADMIN_DOMAIN
     } else {
-        url = 'localhost:4200'
+        url = config.CUSTOMER_DOMAIN
     }
     // kiểm tra email có tồn tại không
     db.query('SELECT * FROM user WHERE email = ?', [email], (err, res) => {

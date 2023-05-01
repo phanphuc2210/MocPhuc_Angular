@@ -11,7 +11,7 @@ router.get('/', voucherController.list)
 router.post('/save', authMiddleware.isAuth, voucherController.save)
 router.post('/', authMiddleware.isAuth, authMiddleware.checkAdmin, voucherController.add)
 router.put('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin, voucherController.update)
-// router.delete('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin,voucherController.remove)
+router.delete('/:id', authMiddleware.isAuth, authMiddleware.checkAdmin,voucherController.remove)
 
 
 

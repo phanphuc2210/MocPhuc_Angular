@@ -6,7 +6,7 @@ const Status = (status) => {
 }
 
 Status.getAll= (result) => {
-    db.query('SELECT * FROM wood' , (err, res) => {
+    db.query('SELECT * FROM status' , (err, res) => {
         if(err) {
             result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
@@ -15,19 +15,19 @@ Status.getAll= (result) => {
     })
 }
 
-Status.getById= (id, result) => {
-    let query = 'SELECT * FROM wood WHERE id = ?;'
-    db.query(query, id, (err, res) => {
-        if(err) {
-            result({error: "Lỗi khi truy vấn dữ liệu"})
-        } else {
-            if(res.length > 0) {
-                result(res[0])
-            } else {
-                result({error: "Không tìm thấy dữ liệu"})
-            }
-        }
-    })
-}
+// Status.getById= (id, result) => {
+//     let query = 'SELECT * FROM wood WHERE id = ?;'
+//     db.query(query, id, (err, res) => {
+//         if(err) {
+//             result({error: "Lỗi khi truy vấn dữ liệu"})
+//         } else {
+//             if(res.length > 0) {
+//                 result(res[0])
+//             } else {
+//                 result({error: "Không tìm thấy dữ liệu"})
+//             }
+//         }
+//     })
+// }
 
 module.exports = Status

@@ -86,7 +86,25 @@ Type.create = (data, result) => {
                 );
             }
         })
-    } 
+    } else {
+        db.query(
+            query,
+            [
+                data.name,
+                data.parentId,
+                data.description,
+                slug(data.name),
+                data.active,
+            ],
+            (err, res) => {
+                if (err) {
+                    result({ error: 'Lỗi khi thêm mới dữ liệu' });
+                } else {
+                    result({ id: res.insertId, ...data });
+                }
+            }
+        );
+    }
 };
 
 Type.update = (id, data, result) => {

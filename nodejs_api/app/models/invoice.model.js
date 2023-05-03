@@ -174,13 +174,63 @@ Invoice.updateStatus = (data, result) => {
 Invoice.getStatis = (queryParams, result) => {
     let from = queryParams.from
     let to = queryParams.to
-    let query = 'SELECT d.productId, SUM(d.quantity_order) as quantity FROM `order` as o JOIN `order_detail` as d ON o.id = d.orderId WHERE o.date >= ? AND o.date <= ? GROUP BY d.productId ORDER BY d.productId'
+    let query = 'SELECT d.productId, SUM(d.quantity_order) as quantity FROM `order` as o JOIN `order_detail` as d ON o.id = d.orderId WHERE o.order_date >= ? AND o.order_date <= ? GROUP BY d.productId ORDER BY d.productId'
     db.query(query, [from, to],(err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi truy vấn dữ liệu"})
         } else {
             result(res)
+        }
+    })
+}
+
+Invoice.analysis = (queryParams, result) => {
+    let from = queryParams.from
+    let to = queryParams.to
+
+    let quantityCustomer = 0
+    let quantityProduct = 0
+    let quantityOrder = 0
+
+    let query = 'SELECT * FROM order_detail AS od '
+    query += 'JOIN `order` AS o ON od.orderId = o.id '
+    query += 'WHERE o.order_date >= ? AND o.order_date <= ? '
+    query += 'GROUP BY o.customer_name'
+
+    let queryTotalProduct = 'SELECT od.productId, SUM(od.quantity_order) as quantity '
+    queryTotalProduct += 'FROM order_detail AS od JOIN `order` AS o ON od.orderId = o.id '
+    queryTotalProduct += 'WHERE o.order_date >= ? AND o.order_date <= ? '
+    queryTotalProduct += 'GROUP BY od.productId;'
+
+    db.query(query,[from, to],(err, res) => {
+        if(err) {
+            console.log(err)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            quantityCustomer = res.length
+            db.query(queryTotalProduct, [from, to], (err, res) => {
+                if(err) {
+                    console.log(err)
+                    result({error: "Lỗi khi truy vấn dữ liệu"})
+                } else {
+                    if (res.length > 0) {
+                        res.forEach(val => {
+                            quantityProduct += val.quantity
+                        })
+                    }
+
+                    db.query('SELECT * FROM `order` WHERE order_date >= ? AND order_date <= ?', [from, to], (err, res) => {
+                        if(err) {
+                            console.log(err)
+                            result({error: "Lỗi khi truy vấn dữ liệu"})
+                        } else {
+                            quantityOrder = res.length
+                            result({customers: quantityCustomer, products: quantityProduct, orders: quantityOrder})
+                        }
+                    })
+                }
+            })
         }
     })
 }

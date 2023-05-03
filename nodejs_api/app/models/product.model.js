@@ -20,6 +20,8 @@ Product.getAll= (queryParams, result) => {
     let filters = []
     let filter_query = ''
     let limit = ''
+    let order = ''
+    let join = ''
     if(queryParams != null) {
         if(queryParams.name) {
             filters.push(`a.name LIKE '%${queryParams.name}%'`)
@@ -38,6 +40,13 @@ Product.getAll= (queryParams, result) => {
         }
         if(queryParams.limit) {
             limit = `LIMIT ${Number(queryParams.limit)}`
+        } 
+        if(queryParams.isNew) {
+            order = ` ORDER BY a.id DESC `
+        }
+        if(queryParams.bestSeller) {
+            join = ' JOIN `order_detail` AS od ON a.id = od.productId '
+            order = ' ORDER BY COUNT(od.productId) DESC '
         }
     }
 
@@ -46,8 +55,8 @@ Product.getAll= (queryParams, result) => {
     }
     
     let query = 'SELECT a.id, a.name, a.typeId, a.quantity, a.price, a.description, a.slug,b.name AS type_name, image.url as image, COUNT(c.userId) as amountComment, ROUND(AVG(c.star)) as starTotal '
-    query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId LEFT JOIN comment AS c ON a.id = c.productId '
-    query += filter_query + ' GROUP by a.id ' + limit
+    query += 'FROM product AS a JOIN type AS b ON a.typeId = b.id JOIN image ON a.id = image.productId LEFT JOIN comment AS c ON a.id = c.productId ' + join
+    query += filter_query + ' GROUP by a.id ' + order + limit
     db.query(query , (err, res) => {
         if(err) {
             result({error: "Lỗi khi truy vấn dữ liệu"})

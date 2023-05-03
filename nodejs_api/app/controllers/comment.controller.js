@@ -2,7 +2,28 @@ var Comment = require('../models/comment.model')
 
 exports.list = (req, res) => {
     const productId = req.params.productId
-    Comment.getAll(productId, (response) => {
+    Comment.getAllByProductId(productId, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.all = (req, res) => {
+    Comment.getAll((response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
+exports.analysis = (req, res) => {
+    var query = req.query
+    Comment.analysis(query, (response) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {

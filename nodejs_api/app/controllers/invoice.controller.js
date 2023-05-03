@@ -68,6 +68,17 @@ exports.statistical = (req, res) => {
     })
 }
 
+exports.analysis = (req, res) => {
+    var query = req.query
+    Invoice.analysis(query, (response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}
+
 exports.sendMail = (req, res) => {
     var data = req.body
     Invoice.sendMail(data, (response) => {

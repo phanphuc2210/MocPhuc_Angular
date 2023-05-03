@@ -5,6 +5,7 @@ var voucherController = require('../controllers/voucher.controller')
 
 router.get('/check-apply', voucherController.checkApply)
 router.get('/user/:userId', voucherController.listByUser)
+router.delete('/remove/:userId/:voucherId', voucherController.removeByUser)
 router.get('/:id', voucherController.detail)
 router.get('/', voucherController.list)
 

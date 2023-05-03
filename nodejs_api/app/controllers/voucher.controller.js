@@ -88,3 +88,15 @@ exports.remove = (req, res) => {
         }
     })
 }
+
+exports.removeByUser = (req, res) => {
+    var userId = req.params.userId
+    var voucherId = req.params.voucherId
+    Voucher.removeByUser(userId, voucherId,(response) => {
+        if(response.error) {
+            res.status(400).send({message: response.error})
+        } else {
+            res.send(response)
+        }
+    })
+}

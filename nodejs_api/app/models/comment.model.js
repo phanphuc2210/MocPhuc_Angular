@@ -9,8 +9,22 @@ const Comment = (comment) => {
     this.star = comment.star
 }
 
-Comment.getAll= (productId, result) => {
+Comment.getAllByProductId= (productId, result) => {
     db.query('SELECT c.userId, c.productId, c.message, c.time, c.star, CONCAT(u.lastname, " ",u.firstname) as username FROM comment as c JOIN user as u ON c.userId = u.id WHERE productId = ?', productId, (err, res) => {
+        if(err) {
+            console.log(err)
+            result({error: "Lỗi khi truy vấn dữ liệu"})
+        } else {
+            result(res)
+        }
+    })
+}
+
+Comment.getAll = (result) => {
+    let query = 'SELECT c.message, c.star, CONCAT(u.lastname, " ",u.firstname) as username, image.url as image, p.slug '
+    query += 'FROM comment as c JOIN user as u ON c.userId = u.id '
+    query += 'JOIN image ON c.productId = image.productId JOIN product AS p ON p.id = c.productId'
+    db.query(query, (err, res) => {
         if(err) {
             console.log(err)
             result({error: "Lỗi khi truy vấn dữ liệu"})
@@ -57,6 +71,45 @@ Comment.update = (data, result) => {
             result({error: "Lỗi khi sửa comment"})
         } else {
             result({...data, time: current})
+        }
+    })
+}
+
+Comment.analysis = (queryParams, result) => {
+    let from = queryParams.from
+    let to = queryParams.to
+
+    let quantity_star = {
+        "one_star": 0,
+        "two_star": 0,
+        "three_star": 0,
+        "four_star": 0,
+        "five_star": 0
+    }
+
+    let queryStar = 'SELECT star, COUNT(star) AS quantity FROM comment WHERE time >= ? AND time <= ? GROUP BY star'
+    db.query(queryStar, [from, to], (err, res) => {
+        if(err) {
+            console.log(err)
+            result({error: "Lỗi khi sửa comment"})
+        } else {
+            if(res.length > 0) {
+                res.forEach(val => {
+                    if(val.star === 1) {
+                        quantity_star['one_star'] = val.quantity
+                    } else if(val.star === 2) {
+                        quantity_star['two_star'] = val.quantity
+                    } else if(val.star === 3) {
+                        quantity_star['three_star'] = val.quantity
+                    } else if(val.star === 4) {
+                        quantity_star['four_star'] = val.quantity
+                    } else if(val.star === 5) {
+                        quantity_star['five_star'] = val.quantity
+                    }
+                })
+            }
+
+            result(quantity_star)
         }
     })
 }

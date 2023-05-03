@@ -10,7 +10,7 @@ const Cart = (cart) => {
 }
 
 Cart.getCartByUserId= (id, result) => {
-    let query = 'SELECT p.id, p.name, image.url as image, p.price, p.quantity, p.description '+
+    let query = 'SELECT p.id, p.typeId, p.name, image.url as image, p.price, p.quantity, p.description '+
         'FROM cart JOIN product as p ON cart.productId = p.id JOIN image ON cart.productId = image.productId WHERE userId = ?;'
     db.query(query, id, (err, res) => {
         if(err) {

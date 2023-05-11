@@ -89,7 +89,7 @@ Cart.payment = (data, result) => {
                 })
             });
             db.query('UPDATE voucher SET quantity = quantity - 1 WHERE code = ?', order.code)
-            result({orderId, message: "Thanh toán thành công"})
+            result({orderId, message: "Đặt hàng thành công"})
         }
     })    
 }

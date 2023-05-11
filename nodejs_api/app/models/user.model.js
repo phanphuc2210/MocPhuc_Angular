@@ -8,6 +8,7 @@ const User = (user) => {
     this.id = user.id
     this.firstName = user.firstName
     this.lastName = user.lastName
+    this.avatar = user.avatar
     this.phone = user.phone
     this.address = user.address
     this.email = user.email
@@ -47,18 +48,28 @@ User.getById= (id, result) => {
 }
 
 User.create= (data, result) => {
-    db.query("INSERT INTO user SET ?", data, (err, res) => {
-        if(err) {
+    db.query('SELECT * FROM user WHERE email = ?', data.email, (err, res) => {
+        if (err) {
             result({error: "Xảy ra lỗi khi đăng ký tài khoản!"})
         } else {
-            result({id: res.insertId, ...data, message: "Đăng ký thành công!"})
+            if (res.length > 0) {
+                result({error: "Email đã được đăng ký!"})
+            } else {
+                db.query("INSERT INTO user SET ?", data, (err, res) => {
+                    if(err) {
+                        result({error: "Xảy ra lỗi khi đăng ký tài khoản!"})
+                    } else {
+                        result({id: res.insertId, ...data, message: "Đăng ký thành công!"})
+                    }
+                })
+            }
         }
     })
 }
 
 User.update = (id, data,result) => {
-    let query = `UPDATE user SET firstname=?, lastname=?, phone=?, address=?, email=?, password=?, role=?  WHERE id=?`
-    db.query(query, [data.firstname, data.lastname, data.phone, data.address, data.email, data.password, data.role, id],
+    let query = `UPDATE user SET firstname=?, lastname=?, avatar=?, phone=?, address=?, email=?, password=?, role=?  WHERE id=?`
+    db.query(query, [data.firstname, data.lastname, data.avatar, data.phone, data.address, data.email, data.password, data.role, id],
         (err, res) => {
             if(err) {
                 result({error: "Lỗi khi cập nhật dữ liệu"}) 
@@ -144,7 +155,7 @@ User.forgotPassword = (data, result) => {
             db.query('UPDATE user SET reset_token = ?, reset_token_expires_at = ? WHERE email = ?', [resetToken, resetTokenExpiresAt || null, email]);
     
             // Send an email to the user with the reset link
-            const resetLink = `http://${url}/reset-password?token=${resetToken}`;
+            const resetLink = `${url}/reset-password?token=${resetToken}`;
             const emailBody = `Click on this link to reset your password: ${resetLink}`;
             sendEmail(email, 'Password reset', emailBody);
     

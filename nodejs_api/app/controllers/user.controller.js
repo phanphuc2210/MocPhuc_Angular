@@ -77,7 +77,7 @@ exports.login = (req, res) => {
         if(response.error) {
             res.status(400).send({message: response.error})
         } else {
-            const payload = {id: response.id, firstname: response.firstname, role: response.role}
+            const payload = {id: response.id, firstname: response.firstname, avatar: response.avatar, role: response.role}
             const token = await jwt.make(payload)
             res.send({token, data: payload, message: "Đăng nhập thành công"})
         }
